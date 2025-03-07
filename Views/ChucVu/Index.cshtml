@@ -1,0 +1,142 @@
+﻿@{
+    ViewData["Title"] = "Quản lý chức vụ";
+}
+
+<h2>Quản lý chức vụ</h2>
+<div id="message" class="alert" style="display:none;"></div>
+
+<button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#chucVuModal" onclick="clearForm()">Thêm chức vụ</button>
+
+<table class="table table-bordered" id="chucVuTable">
+    <thead>
+        <tr>
+            <th>Mã chức vụ</th>
+            <th>Tên chức vụ</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="chucVuList"></tbody>
+</table>
+
+<div class="modal fade" id="chucVuModal" tabindex="-1" role="dialog" aria-labelledby="chucVuModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chucVuModalLabel">Thêm/Sửa chức vụ</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="chucVuForm">
+                    <div class="form-group">
+                        <label>Mã chức vụ</label>
+                        <input type="text" id="maCV" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Tên chức vụ</label>
+                        <input type="text" id="tenCV" class="form-control" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="saveChucVu">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+        loadChucVuList();
+
+        function loadChucVuList() {
+            $.ajax({
+                url: '@Url.Action("GetChucVuList", "ChucVu")',
+                type: 'GET',
+                success: function (data) {
+                    var tbody = $('#chucVuList').empty();
+                    data.forEach(function (cv) {
+                        tbody.append(`
+                            <tr>
+                                <td>${cv.pkSMaCv}</td>
+                                <td>${cv.sTenCv}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm" onclick="editChucVu('${cv.pkSMaCv}')">Sửa</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteChucVu('${cv.pkSMaCv}')">Xóa</button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                }
+            });
+        }
+
+        window.clearForm = function () {
+            $('#chucVuForm')[0].reset();
+            $('#maCV').prop('disabled', false);
+            $('#chucVuModalLabel').text('Thêm chức vụ');
+        };
+
+        $('#saveChucVu').click(function () {
+            var chucVu = {
+                PkSMaCv: $('#maCV').val(),
+                STenCv: $('#tenCV').val()
+            };
+
+            var url = $('#maCV').prop('disabled') ? '@Url.Action("EditChucVu", "ChucVu")' : '@Url.Action("AddChucVu", "ChucVu")';
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(chucVu),
+                success: function (response) {
+                    showMessage(response.success ? 'alert-success' : 'alert-danger', response.message);
+                    if (response.success) {
+                        $('#chucVuModal').modal('hide');
+                        loadChucVuList();
+                    }
+                }
+            });
+        });
+
+        window.editChucVu = function (maCV) {
+            $.ajax({
+                url: '@Url.Action("GetChucVuList", "ChucVu")',
+                type: 'GET',
+                success: function (data) {
+                    var cv = data.find(x => x.pkSMaCv === maCV);
+                    $('#maCV').val(cv.pkSMaCv).prop('disabled', true);
+                    $('#tenCV').val(cv.sTenCv);
+                    $('#chucVuModalLabel').text('Sửa chức vụ');
+                    $('#chucVuModal').modal('show');
+                }
+            });
+        };
+
+        window.deleteChucVu = function (maCV) {
+            if (confirm('Bạn có chắc muốn xóa chức vụ này không?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteChucVu", "ChucVu")',
+                    type: 'POST',
+                    data: { maCV: maCV },
+                    success: function (response) {
+                        showMessage(response.success ? 'alert-success' : 'alert-danger', response.message);
+                        if (response.success) {
+                            loadChucVuList();
+                        }
+                    }
+                });
+            }
+        };
+
+        function showMessage(className, message) {
+            $('#message').removeClass('alert-success alert-danger')
+                .addClass(className).text(message).show();
+            setTimeout(() => $('#message').hide(), 3000);
+        }
+    });
+</script>

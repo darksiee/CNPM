@@ -1,0 +1,73 @@
+﻿@model CNPM.Models.TblPhieuThu
+
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn #" + Model.PkSMaPt;
+}
+
+<h2>Chi tiết hóa đơn #@Model.PkSMaPt</h2>
+
+<div class="card">
+    <div class="card-header">
+        <h4>Thông tin hóa đơn</h4>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã hóa đơn</dt>
+            <dd class="col-sm-9">@Model.PkSMaPt</dd>
+
+            <dt class="col-sm-3">Khách hàng</dt>
+            <dd class="col-sm-9">@Model.FkSMaKhNavigation?.STenKh (@Model.FkSMaKhNavigation?.SSdt)</dd>
+
+            <dt class="col-sm-3">Nhân viên lập</dt>
+            <dd class="col-sm-9">@Model.FkSMaNvNavigation?.SHoTen (@Model.FkSMaNvNavigation?.SSdt)</dd>
+
+            <dt class="col-sm-3">Ngày lập</dt>
+            <dd class="col-sm-9">@String.Format("{0:dd/MM/yyyy HH:mm}", Model.DTgLap)</dd>
+
+            <dt class="col-sm-3">Hình thức thanh toán</dt>
+            <dd class="col-sm-9">@Model.SHinhThucTt</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h4>Chi tiết sản phẩm</h4>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Mã sản phẩm</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.TblCtphieuThus != null)
+                {
+                    @foreach (var ct in Model.TblCtphieuThus)
+                    {
+                        <tr>
+                            <td>@ct.PkFkSMaSp</td>
+                            <td>@(ct.PkFkSMaSpNavigation?.STenSp ?? "Không xác định")</td>
+                            <td>@ct.ISl</td>
+                            <td>@(ct.PkFkSMaSpNavigation?.FDonGiaBan ?? 0)</td>
+                            <td>@(ct.ISl * (ct.PkFkSMaSpNavigation?.FDonGiaBan ?? 0))</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-right"><strong>Tổng tiền</strong></td>
+                    <td>@(Model.TblCtphieuThus?.Sum(ct => ct.ISl * (ct.PkFkSMaSpNavigation?.FDonGiaBan ?? 0)) ?? 0)</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<a href="@Url.Action("HoaDon", "BanHang", new { maPT = Model.PkSMaPt })" class="btn btn-secondary mt-3">Quay lại</a>

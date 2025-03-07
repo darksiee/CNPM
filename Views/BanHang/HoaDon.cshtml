@@ -1,0 +1,37 @@
+﻿@model CNPM.Models.TblPhieuThu
+
+<h2>Hóa đơn #@Model.PkSMaPt</h2>
+<p>Khách hàng: @Model.FkSMaKhNavigation.STenKh</p>
+<p>Ngày lập: @String.Format("{0:dd/MM/yyyy HH:mm}", Model.DTgLap)</p>
+<p>Hình thức thanh toán: @Model.SHinhThucTt</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Số lượng</th>
+            <th>Đơn giá</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ct in Model.TblCtphieuThus)
+        {
+            <tr>
+                <td>@ct.PkFkSMaSpNavigation.STenSp</td>
+                <td>@ct.ISl</td>
+                <td>@ct.PkFkSMaSpNavigation.FDonGiaBan</td>
+                <td>@(ct.ISl * ct.PkFkSMaSpNavigation.FDonGiaBan)</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3">Tổng tiền</td>
+            <td>@Model.TblCtphieuThus.Sum(ct => ct.ISl * ct.PkFkSMaSpNavigation.FDonGiaBan)</td>
+        </tr>
+    </tfoot>
+</table>
+
+<!-- Thêm nút Xem chi tiết hóa đơn -->
+<a href="@Url.Action("ChiTietHoaDon", "BanHang", new { maPT = Model.PkSMaPt })" class="btn btn-info">Xem chi tiết hóa đơn</a>

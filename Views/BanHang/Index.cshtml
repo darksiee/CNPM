@@ -1,0 +1,177 @@
+﻿@model List<CNPM.Models.TblSanPham>
+
+<h2>Bán hàng</h2>
+<div id="error-message" class="alert alert-danger" style="display:none;"></div>
+<div id="success-message" class="alert alert-success" style="display:none;"></div>
+
+<form id="banHangForm">
+    <div class="form-group">
+        <label>Chọn khách hàng</label>
+        <input type="text" id="searchKhachHang" class="form-control" placeholder="Nhập mã hoặc tên khách hàng" />
+        <input type="hidden" name="maKH" id="maKH" />
+        <ul id="khachHangList" class="list-group" style="display:none; position:absolute; z-index:1000;"></ul>
+    </div>
+
+    <div class="form-group">
+        <label>Tìm sản phẩm</label>
+        <input type="text" id="searchSanPham" class="form-control" placeholder="Nhập mã hoặc tên sản phẩm" />
+        <ul id="sanPhamList" class="list-group" style="display:none; position:absolute; z-index:1000;"></ul>
+    </div>
+
+    <table class="table" id="sanPhamTable">
+        <thead>
+            <tr>
+                <th>Tên sản phẩm</th>
+                <th>Tồn kho</th>
+                <th>Đơn giá</th>
+                <th>Số lượng xuất</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="selectedSanPhams">
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Xuất kho & Lập hóa đơn</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Tìm kiếm khách hàng
+        $('#searchKhachHang').on('input', function () {
+            var query = $(this).val();
+            if (query.length < 2) {
+                $('#khachHangList').hide();
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("SearchKhachHang", "BanHang")',
+                type: 'GET',
+                data: { query: query },
+                success: function (data) {
+                    var list = $('#khachHangList').empty().show();
+                    if (data.length === 0) {
+                        list.append('<li class="list-group-item">Không tìm thấy khách hàng</li>');
+                    } else {
+                        data.forEach(function (kh) {
+                            list.append(`<li class="list-group-item" data-ma="${kh.pkSMaKh}" data-ten="${kh.sTenKh}">${kh.sTenKh} (${kh.sSdt})</li>`);
+                        });
+                    }
+                }
+            });
+        });
+
+        $('#khachHangList').on('click', 'li', function () {
+            var maKH = $(this).data('ma');
+            var tenKH = $(this).data('ten');
+            $('#maKH').val(maKH);
+            $('#searchKhachHang').val(tenKH);
+            $('#khachHangList').hide();
+        });
+
+        // Tìm kiếm sản phẩm
+        $('#searchSanPham').on('input', function () {
+            var query = $(this).val();
+            if (query.length < 2) {
+                $('#sanPhamList').hide();
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("SearchSanPham", "BanHang")',
+                type: 'GET',
+                data: { query: query },
+                success: function (data) {
+                    var list = $('#sanPhamList').empty().show();
+                    if (data.length === 0) {
+                        list.append('<li class="list-group-item">Không tìm thấy sản phẩm</li>');
+                    } else {
+                        data.forEach(function (sp) {
+                            list.append(`<li class="list-group-item" data-ma="${sp.pkSMaSp}" data-ten="${sp.sTenSp}" data-ton="${sp.iSl}" data-gia="${sp.fDonGiaBan}">${sp.sTenSp} (Tồn: ${sp.iSl})</li>`);
+                        });
+                    }
+                }
+            });
+        });
+
+        // Thêm sản phẩm vào bảng
+        $('#sanPhamList').on('click', 'li', function () {
+            var maSP = $(this).data('ma');
+            var tenSP = $(this).data('ten');
+            var tonKho = $(this).data('ton');
+            var donGia = $(this).data('gia');
+
+            // Kiểm tra sản phẩm đã có trong bảng chưa
+            if ($('#selectedSanPhams').find(`input[name='sanPhamsXuat[${maSP}]']`).length > 0) {
+                return;
+            }
+
+            var row = `
+                <tr>
+                    <td>${tenSP}</td>
+                    <td>${tonKho}</td>
+                    <td>${donGia}</td>
+                    <td><input type="number" name="sanPhamsXuat[${maSP}]" min="0" max="${tonKho}" class="form-control" /></td>
+                    <td><button type="button" class="btn btn-danger btn-sm remove-sp">Xóa</button></td>
+                </tr>`;
+            $('#selectedSanPhams').append(row);
+            $('#sanPhamList').hide();
+            $('#searchSanPham').val('');
+        });
+
+        // Xóa sản phẩm khỏi bảng
+        $('#selectedSanPhams').on('click', '.remove-sp', function () {
+            $(this).closest('tr').remove();
+        });
+
+        // Gửi form
+        $('#banHangForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var formData = $(this).serializeArray();
+            var data = {};
+            formData.forEach(function (item) {
+                if (item.name.startsWith('sanPhamsXuat')) {
+                    var key = item.name.match(/\[(.*?)\]/)[1];
+                    if (item.value) data['sanPhamsXuat[' + key + ']'] = parseInt(item.value);
+                } else {
+                    data[item.name] = item.value;
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("XuatKhoVaLapHoaDon", "BanHang")',
+                type: 'POST',
+                data: data,
+                success: function (response) {
+                    if (response.success) {
+                        $('#success-message').text('Đã xuất kho và lập hóa đơn thành công! Xem hóa đơn tại đây: ' + response.maPT).show();
+                        $('#error-message').hide();
+                        window.location.href = '/BanHang/HoaDon?maPT=' + response.maPT;
+                    } else {
+                        $('#error-message').text(response.message).show();
+                        $('#success-message').hide();
+                    }
+                },
+                error: function () {
+                    $('#error-message').text('Có lỗi xảy ra, vui lòng thử lại!').show();
+                    $('#success-message').hide();
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .list-group {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+</style>

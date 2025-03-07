@@ -1,0 +1,142 @@
+﻿@{
+    ViewData["Title"] = "Quản lý quyền";
+}
+
+<h2>Quản lý quyền</h2>
+<div id="message" class="alert" style="display:none;"></div>
+
+<button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#quyenModal" onclick="clearForm()">Thêm quyền</button>
+
+<table class="table table-bordered" id="quyenTable">
+    <thead>
+        <tr>
+            <th>Mã quyền</th>
+            <th>Tên quyền</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="quyenList"></tbody>
+</table>
+
+<div class="modal fade" id="quyenModal" tabindex="-1" role="dialog" aria-labelledby="quyenModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quyenModalLabel">Thêm/Sửa quyền</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="quyenForm">
+                    <div class="form-group">
+                        <label>Mã quyền</label>
+                        <input type="text" id="maQuyen" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Tên quyền</label>
+                        <input type="text" id="tenQuyen" class="form-control" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="saveQuyen">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+        loadQuyenList();
+
+        function loadQuyenList() {
+            $.ajax({
+                url: '@Url.Action("GetQuyenList", "Quyen")',
+                type: 'GET',
+                success: function (data) {
+                    var tbody = $('#quyenList').empty();
+                    data.forEach(function (q) {
+                        tbody.append(`
+                            <tr>
+                                <td>${q.pkSMaQuyen}</td>
+                                <td>${q.sTenQuyen}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm" onclick="editQuyen('${q.pkSMaQuyen}')">Sửa</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteQuyen('${q.pkSMaQuyen}')">Xóa</button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                }
+            });
+        }
+
+        window.clearForm = function () {
+            $('#quyenForm')[0].reset();
+            $('#maQuyen').prop('disabled', false);
+            $('#quyenModalLabel').text('Thêm quyền');
+        };
+
+        $('#saveQuyen').click(function () {
+            var quyen = {
+                PkSMaQuyen: $('#maQuyen').val(),
+                STenQuyen: $('#tenQuyen').val()
+            };
+
+            var url = $('#maQuyen').prop('disabled') ? '@Url.Action("EditQuyen", "Quyen")' : '@Url.Action("AddQuyen", "Quyen")';
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(quyen),
+                success: function (response) {
+                    showMessage(response.success ? 'alert-success' : 'alert-danger', response.message);
+                    if (response.success) {
+                        $('#quyenModal').modal('hide');
+                        loadQuyenList();
+                    }
+                }
+            });
+        });
+
+        window.editQuyen = function (maQuyen) {
+            $.ajax({
+                url: '@Url.Action("GetQuyenList", "Quyen")',
+                type: 'GET',
+                success: function (data) {
+                    var q = data.find(x => x.pkSMaQuyen === maQuyen);
+                    $('#maQuyen').val(q.pkSMaQuyen).prop('disabled', true);
+                    $('#tenQuyen').val(q.sTenQuyen);
+                    $('#quyenModalLabel').text('Sửa quyền');
+                    $('#quyenModal').modal('show');
+                }
+            });
+        };
+
+        window.deleteQuyen = function (maQuyen) {
+            if (confirm('Bạn có chắc muốn xóa quyền này không?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteQuyen", "Quyen")',
+                    type: 'POST',
+                    data: { maQuyen: maQuyen },
+                    success: function (response) {
+                        showMessage(response.success ? 'alert-success' : 'alert-danger', response.message);
+                        if (response.success) {
+                            loadQuyenList();
+                        }
+                    }
+                });
+            }
+        };
+
+        function showMessage(className, message) {
+            $('#message').removeClass('alert-success alert-danger')
+                .addClass(className).text(message).show();
+            setTimeout(() => $('#message').hide(), 3000);
+        }
+    });
+</script>
