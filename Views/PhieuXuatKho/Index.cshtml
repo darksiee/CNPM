@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "Quản lý phiếu xuất kho";
+}
+
+<h2>Quản lý phiếu xuất kho</h2>
+<div id="message" class="alert" style="display:none;"></div>
+
+<table class="table table-bordered" id="phieuXuatKhoTable">
+    <thead>
+        <tr>
+            <th>Mã phiếu xuất</th>
+            <th>Ngày lập</th>
+            <th>Nhân viên</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="phieuXuatKhoList"></tbody>
+</table>
+
+<div class="modal fade" id="chiTietModal" tabindex="-1" role="dialog" aria-labelledby="chiTietModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="chiTietModalLabel">Chi tiết phiếu xuất kho</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="chiTietInfo"></div>
+                <table class="table table-bordered" id="chiTietTable">
+                    <thead>
+                        <tr>
+                            <th>Mã sản phẩm</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Số lượng yêu cầu</th>
+                            <th>Số lượng xuất</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chiTietList"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+        loadPhieuXuatKhoList();
+
+        function loadPhieuXuatKhoList() {
+            $.ajax({
+                url: '@Url.Action("GetPhieuXuatKhoList", "PhieuXuatKho")',
+                type: 'GET',
+                success: function (data) {
+                    var tbody = $('#phieuXuatKhoList').empty();
+                    data.forEach(function (px) {
+                        tbody.append(`
+                            <tr>
+                                <td>${px.pkSMaPx}</td>
+                                <td>${new Date(px.dTgLap).toLocaleDateString()}</td>
+                                <td>${px.nhanVien}</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" onclick="viewChiTiet('${px.pkSMaPx}')">Xem chi tiết</button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                }
+            });
+        }
+
+        window.viewChiTiet = function (maPX) {
+            $.ajax({
+                url: '@Url.Action("GetChiTietPhieuXuatKho", "PhieuXuatKho")',
+                type: 'GET',
+                data: { maPX: maPX },
+                success: function (data) {
+                    $('#chiTietInfo').html(`
+                        <p><strong>Mã phiếu xuất:</strong> ${data.maPX}</p>
+                        <p><strong>Nhân viên:</strong> ${data.nhanVien}</p>
+                        <p><strong>Ngày lập:</strong> ${new Date(data.ngayLap).toLocaleDateString()}</p>
+                    `);
+
+                    var tbody = $('#chiTietList').empty();
+                    data.chiTiet.forEach(function (ct) {
+                        tbody.append(`
+                            <tr>
+                                <td>${ct.pkFkSMaSp}</td>
+                                <td>${ct.sanPham}</td>
+                                <td>${ct.iSlyc}</td>
+                                <td>${ct.iSlx}</td>
+                                <td>${ct.sGhiChu || ''}</td>
+                            </tr>
+                        `);
+                    });
+
+                    $('#chiTietModal').modal('show');
+                }
+            });
+        };
+    });
+</script>

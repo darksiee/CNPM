@@ -2,53 +2,65 @@
     ViewData["Title"] = "Quản lý tài khoản";
 }
 
-<h2>Quản lý tài khoản</h2>
-<div id="message" class="alert" style="display:none;"></div>
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">Quản lý tài khoản</h2>
 
-<button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#taiKhoanModal" onclick="clearForm()">Thêm tài khoản</button>
+    <div id="message" class="alert" style="display:none;"></div>
 
-<table class="table table-bordered" id="taiKhoanTable">
-    <thead>
-        <tr>
-            <th>Mã tài khoản</th>
-            <th>Tên tài khoản</th>
-            <th>Mật khẩu</th>
-            <th>Quyền</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody id="taiKhoanList"></tbody>
-</table>
+    <!-- Nút thêm tài khoản -->
+    <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#taiKhoanModal" onclick="clearForm()">
+        Thêm tài khoản
+    </button>
 
-<div class="modal fade" id="taiKhoanModal" tabindex="-1" role="dialog" aria-labelledby="taiKhoanModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="taiKhoanModalLabel">Thêm/Sửa tài khoản</h5>
-            </div>
-            <div class="modal-body">
-                <form id="taiKhoanForm">
-                    <div class="form-group">
-                        <label>Mã tài khoản</label>
-                        <input type="text" id="maTK" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Tên tài khoản</label>
-                        <input type="text" id="tenTK" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Mật khẩu</label>
-                        <input type="password" id="matKhau" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Quyền</label>
-                        <select id="maQuyen" class="form-control" required></select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="saveTaiKhoan">Lưu</button>
+    <!-- Bảng danh sách tài khoản -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-bordered table-hover mb-0" id="taiKhoanTable">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th>Mã tài khoản</th>
+                        <th>Tên tài khoản</th>
+                        <th>Mật khẩu</th>
+                        <th>Quyền</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="taiKhoanList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal thêm/sửa tài khoản -->
+    <div class="modal fade" id="taiKhoanModal" tabindex="-1" role="dialog" aria-labelledby="taiKhoanModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="taiKhoanModalLabel">Thêm/Sửa tài khoản</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="taiKhoanForm">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Mã tài khoản</label>
+                            <input type="text" id="maTK" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tên tài khoản</label>
+                            <input type="text" id="tenTK" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Mật khẩu</label>
+                            <input type="password" id="matKhau" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Quyền</label>
+                            <select id="maQuyen" class="form-control" required></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="saveTaiKhoan">Lưu</button>
+                </div>
             </div>
         </div>
     </div>
@@ -75,7 +87,7 @@
                                 <td>${tk.sMk}</td>
                                 <td>${tk.quyen}</td>
                                 <td>
-                                    <button class="btn btn-warning btn-sm" onclick="editTaiKhoan('${tk.pkSMaTk}')">Sửa</button>
+                                    <button class="btn btn-warning btn-sm mr-1" onclick="editTaiKhoan('${tk.pkSMaTk}')">Sửa</button>
                                     <button class="btn btn-danger btn-sm" onclick="deleteTaiKhoan('${tk.pkSMaTk}')">Xóa</button>
                                 </td>
                             </tr>
@@ -137,7 +149,7 @@
                     $('#maTK').val(tk.pkSMaTk).prop('disabled', true);
                     $('#tenTK').val(tk.sTenTk);
                     $('#matKhau').val(tk.sMk);
-                    $('#maQuyen').val(tk.fkSMaQuyen); // Giả định fkSMaQuyen có trong data
+                    $('#maQuyen').val(tk.fkSMaQuyen);
                     $('#taiKhoanModalLabel').text('Sửa tài khoản');
                     $('#taiKhoanModal').modal('show');
                 }
@@ -165,11 +177,10 @@
                 .addClass(className).text(message).show();
             setTimeout(() => $('#message').hide(), 3000);
         }
-         $(document).on('click', '.close, .btn-secondary', function () {
+
+        $(document).on('click', '.close, .btn-secondary', function () {
             console.log("Nút đóng được click");
-            $('# taiKhoanModal').modal('hide');
+            $('#taiKhoanModal').modal('hide'); // Sửa khoảng trắng trong id
         });
     });
 </script>
-
-                       
