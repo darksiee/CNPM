@@ -25,9 +25,6 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="taiKhoanModalLabel">Thêm/Sửa tài khoản</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
             </div>
             <div class="modal-body">
                 <form id="taiKhoanForm">
@@ -168,5 +165,11 @@
                 .addClass(className).text(message).show();
             setTimeout(() => $('#message').hide(), 3000);
         }
+         $(document).on('click', '.close, .btn-secondary', function () {
+            console.log("Nút đóng được click");
+            $('# taiKhoanModal').modal('hide');
+        });
     });
 </script>
+
+                       

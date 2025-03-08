@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
 using CNPM.Models;
-using System.Security.Claims;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 namespace CNPM.Controllers
 {
@@ -25,9 +26,9 @@ namespace CNPM.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string username, string password)
         {
-            var taiKhoan = _context.TblTaiKhoans
-                .Include(tk => tk.FkSMaQuyenNavigation) // Load quyền
-                .FirstOrDefault(tk => tk.STenTk == username && tk.SMk == password);
+            var taiKhoan = await _context.TblTaiKhoans
+                .Include(tk => tk.FkSMaQuyenNavigation)
+                .FirstOrDefaultAsync(tk => tk.STenTk == username && tk.SMk == password);
 
             if (taiKhoan == null)
             {
@@ -35,33 +36,72 @@ namespace CNPM.Controllers
                 return View();
             }
 
-            // Lấy mã quyền thay vì tên quyền
-            var maQuyen = taiKhoan.FkSMaQuyenNavigation?.PkSMaQuyen ?? "User";
-
-            Console.WriteLine($"User Role (MaQuyen): {maQuyen}"); // Debug kiểm tra mã quyền
-
-            // Tạo claims cho người dùng
+            // Thêm các Claim, gán Role là mã quyền (FK_sMaQuyen)
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, taiKhoan.STenTk),
-        new Claim("MaTK", taiKhoan.PkSMaTk),
-        new Claim(ClaimTypes.Role, maQuyen) // Lưu MÃ quyền thay vì tên quyền
-    };
+            {
+                new Claim(ClaimTypes.Name, taiKhoan.STenTk),
+                new Claim("MaTK", taiKhoan.PkSMaTk),
+                new Claim(ClaimTypes.Role, taiKhoan.FkSMaQuyen ?? "Unknown"), // Role là mã quyền (Q002)
+                new Claim("FkSMaQuyen", taiKhoan.FkSMaQuyen ?? "Unknown") // Claim riêng cho mã quyền nếu cần
+            };
 
             var identity = new ClaimsIdentity(claims, "CookieAuth");
             var principal = new ClaimsPrincipal(identity);
 
-            // Đăng nhập người dùng
             await HttpContext.SignInAsync("CookieAuth", principal);
-
-            return RedirectToAction("Index", "BanHang"); // Chuyển hướng đến BanHang sau khi đăng nhập
+            return RedirectToAction("Index", "BanHang");
         }
 
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync("CookieAuth"); 
-            return RedirectToAction("Login", "Account"); 
+            await HttpContext.SignOutAsync("CookieAuth");
+            return RedirectToAction("Login", "Account");
+        }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(string tenTK, string matKhau)
+        {
+            if (string.IsNullOrEmpty(tenTK) || string.IsNullOrEmpty(matKhau))
+            {
+                ViewBag.ErrorMessage = "Vui lòng điền đầy đủ tên tài khoản và mật khẩu!";
+                return View();
+            }
+
+            if (await _context.TblTaiKhoans.AnyAsync(tk => tk.STenTk == tenTK))
+            {
+                ViewBag.ErrorMessage = "Tên tài khoản đã được sử dụng!";
+                return View();
+            }
+
+            // Tự sinh mã tài khoản (TK001, TK002, ...)
+            string maTK;
+            int count = 1;
+            do
+            {
+                maTK = $"TK{count:000}";
+                count++;
+            } while (await _context.TblTaiKhoans.AnyAsync(tk => tk.PkSMaTk == maTK));
+
+            var taiKhoan = new TblTaiKhoan
+            {
+                PkSMaTk = maTK,
+                STenTk = tenTK,
+                SMk = matKhau,
+                FkSMaQuyen = null // Gán quyền mặc định Q002 cho tài khoản mới
+            };
+
+            _context.TblTaiKhoans.Add(taiKhoan);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đăng ký tài khoản thành công! Vui lòng đăng nhập.";
+            return RedirectToAction("Login");
         }
 
         [HttpGet]
