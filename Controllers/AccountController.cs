@@ -49,14 +49,14 @@ namespace CNPM.Controllers
             var principal = new ClaimsPrincipal(identity);
 
             await HttpContext.SignInAsync("CookieAuth", principal);
-            return RedirectToAction("Index", "BanHang");
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync("CookieAuth");
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]

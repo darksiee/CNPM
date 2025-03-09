@@ -43,4 +43,5 @@ public partial class TblPhieuChi
     [ForeignKey("PkFkSMaPchi")]
     [InverseProperty("PkFkSMaPchis")]
     public virtual ICollection<TblSanPham> PkFkSMaSps { get; set; } = new List<TblSanPham>();
+
 }

@@ -109,6 +109,8 @@ public partial class PharmacyDbContext : DbContext
                     });
         });
 
+
+
         modelBuilder.Entity<TblBienBanHuy>(entity =>
         {
             entity.HasKey(e => e.PkSMaBbh).HasName("PK__tbl_Bien__471DAAF591300568");

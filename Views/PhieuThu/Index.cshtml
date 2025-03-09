@@ -110,5 +110,14 @@
                 }
             });
         };
+        function showMessage(className, message) {
+            $('#message').removeClass('alert-success alert-danger')
+                .addClass(className).text(message).show();
+            setTimeout(() => $('#message').hide(), 3000);
+        }
+             $(document).on('click', '.close, .btn-secondary', function () {
+        console.log("Nút đóng được click");
+        $('#chiTietModal').modal('hide'); // Sử dụng đúng selector với dấu #
+    });
     });
 </script>

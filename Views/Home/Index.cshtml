@@ -1,8 +1,97 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model X.PagedList.IPagedList<CNPM.Models.TblSanPham>
+@using X.PagedList.Mvc.Core;
+
+@{
+    ViewData["Title"] = "Danh sách Sản phẩm Thuốc";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <!-- Tiêu đề + Đăng nhập -->
+    <div class="d-flex justify-content-between align-items-center my-3">
+        <h2 class="fw-bold text-primary">💊 Nhà thuốc Thái Bình</h2>
+        <div>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Đăng nhập</a>
+            }
+            else
+            {
+                <div class="d-flex align-items-center">
+                    <span class="me-3">Xin chào, <strong>@User.Identity.Name</strong></span>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-primary me-2">Quản lý</a>
+                    }
+
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Đường kẻ phân tách -->
+    <hr class="mb-3">
+
+    <!-- Banner -->
+    <div class="banner-container mb-4">
+        <img src="/images/banner.jpg" alt="Banner Nhà thuốc Thái Bình" class="img-fluid w-100">
+    </div>
+
+    <!-- Thanh tìm kiếm -->
+    <div class="row my-3 justify-content-center">
+        <div class="col-md-6">
+            <form asp-action="Index" method="get">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="searchString" value="@ViewBag.SearchString" placeholder="Nhập tên thuốc để tìm kiếm..." />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <h3 class="fw-bold text-center text-primary my-4">Danh sách Thuốc</h3>
+    <!-- Danh sách sản phẩm -->
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            string imagePath = $"/images/{item.PkSMaSp}.jpg";
+            string defaultImagePath = "/images/default-drug.jpg";
+
+            <div class="col-md-4 mb-4">
+                <a asp-action="Details" asp-route-id="@item.PkSMaSp" class="text-decoration-none">
+                    <div class="card h-100 text-center">
+                        <img src="@imagePath" class="card-img-top" alt="@item.STenSp" style="height: 200px; object-fit: cover;"
+                             onerror="this.src='@defaultImagePath';">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.STenSp</h5>
+                            <p class="card-text">Giá bán: @String.Format("{0:N0}", item.FDonGiaBan) VNĐ</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Phân trang -->
+    <div class="d-flex justify-content-center">
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewBag.SearchString }),
+                 new PagedListRenderOptions
+        {
+            LiElementClasses = new[] { "page-item" },
+            PageClasses = new[] { "page-link" }
+        })
+    </div>
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+   
+}
+
+<style>
+    .banner-container img {
+        height: 350px; /* Điều chỉnh chiều cao banner tại đây */
+        object-fit: cover; /* Giúp ảnh không bị méo */
+    }
+</style>
