@@ -45,14 +45,14 @@ public class BanHangController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> XuatKhoVaLapHoaDon(string maKH, Dictionary<string, int> sanPhamsXuat)
+    public async Task<IActionResult> XuatKhoVaLapHoaDon(string maKH, Dictionary<string, int> sanPhamsXuat, string hinhThucTt, string ghiChu)
     {
         using (var transaction = await _context.Database.BeginTransactionAsync())
         {
             try
             {
-                string maPX = "PX" + DateTime.Now.ToString("yyyyMMddHHmmss"); // 16 ký tự
-                string maPT = "PT" + DateTime.Now.ToString("yyyyMMddHHmmss"); // 16 ký tự
+                string maPX = "PX" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                string maPT = "PT" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
                 if (!await _context.TblNhanViens.AnyAsync(nv => nv.PkSMaNv == "NV001"))
                 {
@@ -61,6 +61,14 @@ public class BanHangController : Controller
                 if (!await _context.TblKhachHangs.AnyAsync(kh => kh.PkSMaKh == maKH))
                 {
                     return Json(new { success = false, message = "Khách hàng không tồn tại!" });
+                }
+                if (hinhThucTt != "Tiền mặt" && hinhThucTt != "Chuyển khoản")
+                {
+                    return Json(new { success = false, message = "Hình thức thanh toán không hợp lệ!" });
+                }
+                if (string.IsNullOrEmpty(ghiChu))
+                {
+                    return Json(new { success = false, message = "Ghi chú không được để trống!" });
                 }
 
                 var phieuXuatKho = new TblPhieuXuatKho
@@ -88,7 +96,7 @@ public class BanHangController : Controller
                         PkFkSMaSp = maSP,
                         ISlyc = soLuongXuat,
                         ISlx = soLuongXuat,
-                        SGhiChu = "Xuất bán"
+                        SGhiChu = ghiChu
                     });
 
                     sanPham.ISl -= soLuongXuat;
@@ -100,7 +108,7 @@ public class BanHangController : Controller
                     DTgLap = DateTime.Now,
                     FkSMaNv = "NV001",
                     FkSMaKh = maKH,
-                    SHinhThucTt = "Tiền mặt"
+                    SHinhThucTt = hinhThucTt
                 };
                 _context.TblPhieuThus.Add(phieuThu);
 
@@ -147,6 +155,7 @@ public class BanHangController : Controller
 
         return View(phieuThu);
     }
+
     [HttpGet]
     public async Task<IActionResult> ChiTietHoaDon(string maPT)
     {
@@ -157,9 +166,9 @@ public class BanHangController : Controller
 
         var phieuThu = await _context.TblPhieuThus
             .Include(pt => pt.TblCtphieuThus)
-            .ThenInclude(ct => ct.PkFkSMaSpNavigation) // Chi tiết sản phẩm
-            .Include(pt => pt.FkSMaKhNavigation) // Thông tin khách hàng
-            .Include(pt => pt.FkSMaNvNavigation) // Thông tin nhân viên lập phiếu
+            .ThenInclude(ct => ct.PkFkSMaSpNavigation)
+            .Include(pt => pt.FkSMaKhNavigation)
+            .Include(pt => pt.FkSMaNvNavigation)
             .FirstOrDefaultAsync(pt => pt.PkSMaPt == maPT);
 
         if (phieuThu == null)
@@ -167,6 +176,6 @@ public class BanHangController : Controller
             return NotFound("Không tìm thấy hóa đơn!");
         }
 
-        return View(phieuThu); // Trả về view ChiTietHoaDon với dữ liệu phiếu thu
+        return View(phieuThu);
     }
 }

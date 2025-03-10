@@ -1,0 +1,55 @@
+﻿/* Tinh chỉnh giao diện */
+.container {
+    max-width: 1200px;
+}
+
+.banner-container img {
+    height: 350px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.banner-container:hover img {
+    transform: scale(1.05);
+}
+
+.input-group {
+    transition: all 0.3s ease;
+}
+
+    .input-group:focus-within {
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.3) !important;
+    }
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-img-top:hover {
+    transform: scale(1.1);
+}
+
+.page-link {
+    border-radius: 8px;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+}
+
+    .page-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+
+.btn-outline-primary.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}

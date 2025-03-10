@@ -1,0 +1,44 @@
+﻿/* Tinh chỉnh kiểu dáng cho footer */
+footer {
+    background: linear-gradient(135deg, #007bff, #0056b3); /* Gradient nền */
+    width: 100vw; /* Chiều rộng toàn màn hình dựa trên viewport */
+    position: relative; /* Đảm bảo footer độc lập với các phần tử cha */
+    left: 50%; /* Dịch chuyển sang phải 50% */
+    transform: translateX(-50%); /* Kéo lại về giữa để căn chính xác */
+    margin: 0; /* Loại bỏ margin mặc định */
+    padding-left: 0; /* Loại bỏ padding mặc định */
+    padding-right: 0; /* Loại bỏ padding mặc định */
+}
+
+.footer-content {
+    max-width: 1200px; /* Giới hạn nội dung chính giữa */
+    margin-left: auto; /* Căn giữa */
+    margin-right: auto; /* Căn giữa */
+}
+
+footer h4 {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+footer p, footer li {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.hover-link:hover {
+    color: #ffd700 !important; /* Màu vàng khi hover */
+    transition: color 0.3s ease;
+}
+
+footer .small {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+/* Đảm bảo body không ảnh hưởng */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Ngăn tràn ngang */
+}

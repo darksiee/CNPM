@@ -18,16 +18,30 @@ namespace CNPM.Controllers
             _context = context;
         }
 
-        public IActionResult Index(string searchString, int? page)
+        public IActionResult Index(string searchString, int? page, string filterType = null)
         {
             int pageSize = 12; // 3 sản phẩm x 4 hàng = 12 sản phẩm mỗi trang
             int pageNumber = page ?? 1;
 
             var sanPhams = _context.TblSanPhams.AsNoTracking();
 
+            // Lọc theo từ khóa tìm kiếm
             if (!string.IsNullOrEmpty(searchString))
             {
                 sanPhams = sanPhams.Where(sp => sp.STenSp.Contains(searchString));
+            }
+
+            // Lọc theo loại thuốc
+            if (!string.IsNullOrEmpty(filterType))
+            {
+                if (filterType == "NoPrescription") // Thuốc không kê đơn
+                {
+                    sanPhams = sanPhams.Where(sp => sp.FkSMaLoai == "LSP001");
+                }
+                else if (filterType == "Prescription") // Thuốc kê đơn
+                {
+                    sanPhams = sanPhams.Where(sp => sp.FkSMaLoai == "LSP002");
+                }
             }
 
             var pagedSanPhams = sanPhams
@@ -35,6 +49,7 @@ namespace CNPM.Controllers
                 .ToPagedList(pageNumber, pageSize);
 
             ViewBag.SearchString = searchString;
+            ViewBag.FilterType = filterType; // Lưu filterType để giữ trạng thái giao diện
             return View(pagedSanPhams);
         }
 

@@ -5,44 +5,44 @@
     ViewData["Title"] = "Danh sách Sản phẩm Thuốc";
 }
 
-<div class="container">
+<div class="container py-4">
     <!-- Tiêu đề + Đăng nhập -->
-    <div class="d-flex justify-content-between align-items-center my-3">
-        <h2 class="fw-bold text-primary">💊 Nhà thuốc Thái Bình</h2>
-        <div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary mb-0" style="font-family: 'Arial', sans-serif;">
+            Nhà thuốc Thái Bình
+        </h2>
+        <div class="d-flex align-items-center gap-3">
             @if (!User.Identity.IsAuthenticated)
             {
-                <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Đăng nhập</a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-primary px-4 py-2 shadow-sm">Đăng nhập</a>
             }
             else
             {
-                <div class="d-flex align-items-center">
-                    <span class="me-3">Xin chào, <strong>@User.Identity.Name</strong></span>
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-primary me-2">Quản lý</a>
-                    }
-
-                </div>
+                <span class="me-3 fw-medium text-dark">Xin chào, <strong>@User.Identity.Name</strong></span>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-primary px-4 py-2 shadow-sm">Quản lý</a>
+                }
             }
         </div>
     </div>
 
     <!-- Đường kẻ phân tách -->
-    <hr class="mb-3">
+    <hr class="my-4 border-2 opacity-50">
 
     <!-- Banner -->
-    <div class="banner-container mb-4">
-        <img src="/images/banner.jpg" alt="Banner Nhà thuốc Thái Bình" class="img-fluid w-100">
+    <div class="banner-container mb-5 rounded-3 overflow-hidden shadow-lg">
+        <img src="/images/banner.jpg" alt="Banner Nhà thuốc Thái Bình" class="img-fluid w-100 transition-img">
     </div>
 
     <!-- Thanh tìm kiếm -->
-    <div class="row my-3 justify-content-center">
+    <div class="row mb-5 justify-content-center">
         <div class="col-md-6">
             <form asp-action="Index" method="get">
-                <div class="input-group">
-                    <input type="text" class="form-control" name="searchString" value="@ViewBag.SearchString" placeholder="Nhập tên thuốc để tìm kiếm..." />
-                    <button type="submit" class="btn btn-primary">
+                <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                    <input type="text" class="form-control border-0 py-3" name="searchString"
+                           value="@ViewBag.SearchString" placeholder="Nhập tên thuốc để tìm kiếm..." />
+                    <button type="submit" class="btn btn-primary px-4">
                         <i class="bi bi-search"></i> Tìm kiếm
                     </button>
                 </div>
@@ -50,22 +50,45 @@
         </div>
     </div>
 
-    <h3 class="fw-bold text-center text-primary my-4">Danh sách Thuốc</h3>
+    <!-- Bộ lọc loại thuốc -->
+    <div class="row mb-5 justify-content-center">
+        <div class="col-md-6 d-flex justify-content-center gap-3">
+            <a asp-action="Index" asp-route-filterType="NoPrescription" asp-route-searchString="@ViewBag.SearchString"
+               class="btn btn-outline-primary px-4 py-2 @(ViewBag.FilterType == "NoPrescription" ? "active" : "")">
+                Thuốc không kê đơn
+            </a>
+            <a asp-action="Index" asp-route-filterType="Prescription" asp-route-searchString="@ViewBag.SearchString"
+               class="btn btn-outline-primary px-4 py-2 @(ViewBag.FilterType == "Prescription" ? "active" : "")">
+                Thuốc kê đơn
+            </a>
+        </div>
+    </div>
+
+    <!-- Tiêu đề danh sách -->
+    <h3 class="fw-bold text-center text-primary mb-5" style="font-size: 2rem; letter-spacing: 1px;">
+        Danh sách Thuốc
+    </h3>
+
     <!-- Danh sách sản phẩm -->
-    <div class="row">
+    <div class="row g-4">
         @foreach (var item in Model)
         {
             string imagePath = $"/images/{item.PkSMaSp}.jpg";
             string defaultImagePath = "/images/default-drug.jpg";
 
-            <div class="col-md-4 mb-4">
+            <div class="col-md-4">
                 <a asp-action="Details" asp-route-id="@item.PkSMaSp" class="text-decoration-none">
-                    <div class="card h-100 text-center">
-                        <img src="@imagePath" class="card-img-top" alt="@item.STenSp" style="height: 200px; object-fit: cover;"
+                    <div class="card h-100 shadow-sm border-0 transition-card hover-lift">
+                        <img src="@imagePath" class="card-img-top" alt="@item.STenSp"
+                             style="height: 220px; object-fit: cover; transition: transform 0.3s;"
                              onerror="this.src='@defaultImagePath';">
-                        <div class="card-body">
-                            <h5 class="card-title">@item.STenSp</h5>
-                            <p class="card-text">Giá bán: @String.Format("{0:N0}", item.FDonGiaBan) VNĐ</p>
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-semibold text-dark mb-3" style="font-size: 1.25rem;">
+                                @item.STenSp
+                            </h5>
+                            <p class="card-text text-muted mb-0">
+                                Giá bán: <span class="fw-bold text-primary">@String.Format("{0:N0}", item.FDonGiaBan) VNĐ</span>
+                            </p>
                         </div>
                     </div>
                 </a>
@@ -74,24 +97,56 @@
     </div>
 
     <!-- Phân trang -->
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center mt-5">
         @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewBag.SearchString }),
                  new PagedListRenderOptions
         {
             LiElementClasses = new[] { "page-item" },
-            PageClasses = new[] { "page-link" }
+            PageClasses = new[] { "page-link shadow-sm" }
         })
     </div>
 </div>
 
+<!-- Footer trải dài toàn màn hình -->
+<footer class="bg-primary text-white py-5 mt-5">
+    <div class="footer-content mx-auto px-4 px-md-5">
+        <div class="row g-4">
+            <!-- Thông tin nhà thuốc -->
+            <div class="col-md-4">
+                <h4 class="fw-bold mb-3">Nhà thuốc Thái Bình</h4>
+                <p class="mb-2">Địa chỉ: 109 Định Công, Hoàng Mai, Hà Nội</p>
+                <p class="mb-2">Hotline: 0909 123 456</p>
+                <p class="mb-2">Email: info@nhathuocthaibinh.com</p>
+                <p>Sứ mệnh: Mang đến sức khỏe và sự an tâm cho mọi nhà.</p>
+            </div>
+
+            <!-- Giờ làm việc -->
+            <div class="col-md-4">
+                <h4 class="fw-bold mb-3">Giờ làm việc</h4>
+                <ul class="list-unstyled">
+                    <li>Thứ 2 - Thứ 6: 7:00 - 21:00</li>
+                    <li>Thứ 7: 8:00 - 20:00</li>
+                    <li>Chủ nhật: 8:00 - 18:00</li>
+                    <li>Các ngày lễ: Nghỉ (trừ trường hợp khẩn cấp)</li>
+                </ul>
+            </div>
+
+            <!-- Liên kết nhanh -->
+            <div class="col-md-4">
+                <h4 class="fw-bold mb-3">Liên kết nhanh</h4>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-white text-decoration-none hover-link">Trang chủ</a></li>
+                    <li><a href="#" class="text-white text-decoration-none hover-link">Danh sách thuốc</a></li>
+                    <li><a href="#" class="text-white text-decoration-none hover-link">Hướng dẫn mua hàng</a></li>
+                    <li><a href="#" class="text-white text-decoration-none hover-link">Liên hệ</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
 @section Scripts {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-   
+    <link rel="stylesheet" href="~/css/footer.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sanpham.css" asp-append-version="true" />
 }
-
-<style>
-    .banner-container img {
-        height: 350px; /* Điều chỉnh chiều cao banner tại đây */
-        object-fit: cover; /* Giúp ảnh không bị méo */
-    }
-</style>

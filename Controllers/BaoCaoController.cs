@@ -128,36 +128,47 @@ public class BaoCaoController : Controller
 
     // 4. Thống kê khách hàng mua nhiều nhất
     [HttpGet]
-    public async Task<IActionResult> GetKhachHangMuaNhieu(int top = 5)
+    public async Task<IActionResult> GetKhachHangMuaNhieu()
     {
-        var khachHang = await _context.TblPhieuThus
-            .Join(_context.TblKhachHangs,
-                pt => pt.FkSMaKh,
+        var khachHang = await _context.TblKhachHangs
+            .GroupJoin(_context.TblPhieuThus,
                 kh => kh.PkSMaKh,
-                (pt, kh) => new { pt, kh })
-            .Join(_context.TblCtphieuThus,
-                p => p.pt.PkSMaPt,
-                ct => ct.PkFkSMaPt,
-                (p, ct) => new { p.kh.PkSMaKh, p.kh.STenKh, ct.ISl, ct.PkFkSMaSp })
-            .Join(_context.TblSanPhams,
-                ct => ct.PkFkSMaSp,
-                sp => sp.PkSMaSp,
-                (ct, sp) => new { ct.PkSMaKh, ct.STenKh, ThanhTien = ct.ISl * sp.FDonGiaBan })
-            .GroupBy(x => new { x.PkSMaKh, x.STenKh })
-            .Select(g => new
-            {
-                MaKH = g.Key.PkSMaKh,
-                TenKH = g.Key.STenKh,
-                TongTien = g.Sum(x => x.ThanhTien),
-                SoLanMua = g.Count()
-            })
-            .OrderByDescending(x => x.TongTien)
-            .Take(top)
+                pt => pt.FkSMaKh,
+                (kh, pts) => new
+                {
+                    MaKH = kh.PkSMaKh,
+                    TenKH = kh.STenKh,
+                    SoDienThoai = kh.SSdt,
+                    HoaDons = pts
+                        .Select(pt => new
+                        {
+                            MaPT = pt.PkSMaPt,
+                            NgayLap = pt.DTgLap,
+                            HinhThucTT = pt.SHinhThucTt,
+                            TongTien = pt.TblCtphieuThus
+                                .Join(_context.TblSanPhams,
+                                    ct => ct.PkFkSMaSp,
+                                    sp => sp.PkSMaSp,
+                                    (ct, sp) => ct.ISl * sp.FDonGiaBan)
+                                .Sum(),
+                            ChiTietHoaDon = pt.TblCtphieuThus
+                                .Select(ct => new
+                                {
+                                    MaSP = ct.PkFkSMaSp,
+                                    TenSP = ct.PkFkSMaSpNavigation.STenSp,
+                                    SoLuong = ct.ISl,
+                                    DonGia = ct.PkFkSMaSpNavigation.FDonGiaBan,
+                                    ThanhTien = ct.ISl * ct.PkFkSMaSpNavigation.FDonGiaBan,
+                                    // Xác định kê đơn dựa trên FkSMaLoai
+                                    KeDon = ct.PkFkSMaSpNavigation.FkSMaLoai == "LSP002" // LSP002 là kê đơn, LSP001 là không kê đơn
+                                }).ToList()
+                        }).ToList()
+                })
+            .OrderBy(x => x.TenKH)
             .ToListAsync();
 
         return Json(khachHang);
     }
-
     // 5. Thống kê hiệu suất nhân viên
     [HttpGet]
     public async Task<IActionResult> GetHieuSuatNhanVien(DateTime? tuNgay, DateTime? denNgay)

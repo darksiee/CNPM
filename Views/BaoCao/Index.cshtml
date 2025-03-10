@@ -82,10 +82,44 @@
         <button class="btn btn-primary mt-3" onclick="loadKhachHang()">Xem</button>
         <table class="table table-bordered mt-3" id="khachHangTable">
             <thead>
-                <tr><th>Mã KH</th><th>Tên KH</th><th>Tổng tiền</th><th>Số lần mua</th></tr>
+                <tr>
+                    <th>Mã KH</th>
+                    <th>Tên KH</th>
+                    <th>Số điện thoại</th>
+                    <th>Hành động</th>
+                </tr>
             </thead>
             <tbody id="khachHangList"></tbody>
         </table>
+
+        <!-- Modal chi tiết lịch sử mua hàng -->
+        <div class="modal fade" id="chiTietKhachHangModal" tabindex="-1" role="dialog" aria-labelledby="chiTietKhachHangLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="chiTietKhachHangLabel">Lịch sử mua hàng</h5>
+                    </div>
+                    <div class="modal-body">
+                        <h6 id="tenKhachHang"></h6>
+                        <table class="table table-bordered" id="hoaDonList">
+                            <thead>
+                                <tr>
+                                    <th>Mã hóa đơn</th>
+                                    <th>Ngày lập</th>
+                                    <th>Hình thức TT</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hoaDonListBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Nhân viên -->
@@ -156,17 +190,72 @@
         });
     }
 
-    function loadKhachHang() {
+            function loadKhachHang() {
         $.ajax({
             url: '@Url.Action("GetKhachHangMuaNhieu", "BaoCao")',
             type: 'GET',
             success: function (data) {
                 var tbody = $('#khachHangList').empty();
                 data.forEach(function (item) {
-                    tbody.append(`<tr><td>${item.maKH}</td><td>${item.tenKH}</td><td>${item.tongTien}</td><td>${item.soLanMua}</td></tr>`);
+                    tbody.append(`
+                        <tr>
+                            <td>${item.maKH}</td>
+                            <td>${item.tenKH}</td>
+                            <td>${item.soDienThoai}</td>
+                            <td><button class="btn btn-info btn-sm" onclick='showChiTietKhachHang(${JSON.stringify(item)})'>Chi tiết</button></td>
+                        </tr>
+                    `);
                 });
             }
         });
+    }
+
+    function showChiTietKhachHang(khachHang) {
+        $('#tenKhachHang').text(`Khách hàng: ${khachHang.tenKH} (${khachHang.maKH})`);
+        var tbody = $('#hoaDonListBody').empty();
+        if (khachHang.hoaDons.length === 0) {
+            tbody.append('<tr><td colspan="5">Không có hóa đơn nào</td></tr>');
+        } else {
+            khachHang.hoaDons.forEach(function (hoaDon) {
+                var chiTietHtml = `
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Mã SP</th>
+                                <th>Tên SP</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th>Thành tiền</th>
+                                <th>Loại thuốc</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${hoaDon.chiTietHoaDon.map(ct => `
+                                <tr>
+                                    <td>${ct.maSP}</td>
+                                    <td>${ct.tenSP}</td>
+                                    <td>${ct.soLuong}</td>
+                                    <td>${ct.donGia}</td>
+                                    <td>${ct.thanhTien}</td>
+                                    <td>${ct.keDon ? "Kê đơn" : "Không kê đơn"}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>`;
+                tbody.append(`
+                    <tr>
+                        <td>${hoaDon.maPT}</td>
+                        <td>${new Date(hoaDon.ngayLap).toLocaleDateString()}</td>
+                        <td>${hoaDon.hinhThucTT}</td>
+                        <td>${hoaDon.tongTien}</td>
+                        <td><button class="btn btn-link btn-sm" onclick="$('#chiTiet_${hoaDon.maPT}').toggle()">Xem</button>
+                            <div id="chiTiet_${hoaDon.maPT}" style="display:none">${chiTietHtml}</div>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+        $('#chiTietKhachHangModal').modal('show');
     }
 
     function loadNhanVien() {
@@ -195,6 +284,15 @@
             else if (tab === '#tonKho') loadTonKho();
             else if (tab === '#khachHang') loadKhachHang();
             else if (tab === '#nhanVien') loadNhanVien();
+        });
+         function showMessage(className, message) {
+            $('#message').removeClass('alert-success alert-danger')
+                .addClass(className).text(message).show();
+            setTimeout(() => $('#message').hide(), 3000);
+        }
+          $(document).on('click', '.close, .btn-secondary', function () {
+            console.log("Nút đóng được click");
+            $('#chiTietKhachHangModal').modal('hide');
         });
     });
 </script>

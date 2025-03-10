@@ -14,14 +14,12 @@
             }
             else
             {
-
                 <div class="d-flex align-items-center">
                     <span class="me-3">Xin chào, <strong>@User.Identity.Name</strong></span>
                     @if (User.IsInRole("Admin"))
                     {
                         <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-primary me-2">Quản lý</a>
                     }
-
                 </div>
             }
         </div>
@@ -39,6 +37,22 @@
         </div>
         <div class="col-md-6">
             <h2>@Model.STenSp</h2>
+            <!-- Hiển thị loại thuốc -->
+            <p>
+                <strong>Loại thuốc:</strong>
+                @if (Model.FkSMaLoai == "LSP001")
+                {
+                    <span class="text-success">Thuốc không kê đơn</span>
+                }
+                else if (Model.FkSMaLoai == "LSP002")
+                {
+                    <span class="text-danger">Thuốc kê đơn</span>
+                }
+                else
+                {
+                    <span class="text-muted">Không xác định</span>
+                }
+            </p>
             <p><strong>Giá bán:</strong> @String.Format("{0:N0}", Model.FDonGiaBan) VNĐ</p>
             <p><strong>Nhà cung cấp:</strong> @(Model.FkSMaNccNavigation != null ? Model.FkSMaNccNavigation.STenNcc : "Không có thông tin")</p>
             <p><strong>Mô tả:</strong> Thuốc này có công dụng hỗ trợ điều trị các bệnh thông thường, tăng cường sức đề kháng và giúp phục hồi sức khỏe.</p>

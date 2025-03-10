@@ -37,6 +37,21 @@
             </div>
         </div>
 
+        <!-- Thêm dropdown hình thức thanh toán -->
+        <div class="form-group mt-3">
+            <label class="font-weight-bold">Hình thức thanh toán</label>
+            <select name="hinhThucTt" id="hinhThucTt" class="form-control">
+                <option value="Tiền mặt">Tiền mặt</option>
+                <option value="Chuyển khoản">Chuyển khoản</option>
+            </select>
+        </div>
+
+        <!-- Thêm input ghi chú xuất kho -->
+        <div class="form-group">
+            <label class="font-weight-bold">Ghi chú xuất kho</label>
+            <input type="text" name="ghiChu" id="ghiChu" class="form-control" placeholder="Nhập ghi chú..." required />
+        </div>
+
         <button type="submit" class="btn btn-primary mt-3">Xuất kho & Lập hóa đơn</button>
     </form>
 </div>
@@ -133,39 +148,41 @@
         });
 
         // Gửi form
-        $('#banHangForm').on('submit', function (e) {
-            e.preventDefault();
+       $('#banHangForm').on('submit', function (e) {
+    e.preventDefault();
 
-            var formData = $(this).serializeArray();
-            var data = {};
-            formData.forEach(function (item) {
-                if (item.name.startsWith('sanPhamsXuat')) {
-                    var key = item.name.match(/\[(.*?)\]/)[1];
-                    if (item.value) data['sanPhamsXuat[' + key + ']'] = parseInt(item.value);
-                } else {
-                    data[item.name] = item.value;
-                }
-            });
+    var formData = $(this).serializeArray();
+    var data = {};
+    formData.forEach(function (item) {
+        if (item.name.startsWith('sanPhamsXuat')) {
+            var key = item.name.match(/\[(.*?)\]/)[1];
+            if (item.value) data['sanPhamsXuat[' + key + ']'] = parseInt(item.value);
+        } else {
+            data[item.name] = item.value;
+        }
+    });
 
-            $.ajax({
-                url: '@Url.Action("XuatKhoVaLapHoaDon", "BanHang")',
-                type: 'POST',
-                data: data,
-                success: function (response) {
-                    if (response.success) {
-                        $('#success-message').text('Đã xuất kho và lập hóa đơn thành công! Xem hóa đơn tại đây: ' + response.maPT).show();
-                        $('#error-message').hide();
-                        window.location.href = '/BanHang/HoaDon?maPT=' + response.maPT;
-                    } else {
-                        $('#error-message').text(response.message).show();
-                        $('#success-message').hide();
-                    }
-                },
-                error: function () {
-                    $('#error-message').text('Có lỗi xảy ra, vui lòng thử lại!').show();
-                    $('#success-message').hide();
-                }
-            });
+               $.ajax({
+        url: '@Url.Action("XuatKhoVaLapHoaDon", "BanHang")',
+        type: 'POST',
+        data: data,
+        success: function (response) {
+            if (response.success) {
+                $('#success-message').text('Đã xuất kho và lập hóa đơn thành công! Xem hóa đơn tại đây: ' + response.maPT).show();
+                $('#error-message').hide();
+                window.location.href = '/BanHang/HoaDon?maPT=' + response.maPT;
+            } else {
+                $('#error-message').text(response.message).show();
+                $('#success-message').hide();
+            }
+        },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Có lỗi xảy ra, vui lòng thử lại!';
+            $('#error-message').text('Lỗi: ' + errorMessage + ' (Status: ' + status + ')').show();
+            $('#success-message').hide();
+            console.log('Chi tiết lỗi:', xhr.responseText); // In chi tiết lỗi ra console
+        }
+    });
         });
     });
 </script>
