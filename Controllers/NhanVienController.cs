@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-[Authorize] // Yêu cầu đăng nhập
+[Authorize] 
 public class NhanVienController : Controller
 {
     private readonly PharmacyDbContext _context;
@@ -16,13 +16,11 @@ public class NhanVienController : Controller
         _context = context;
     }
 
-    // Hiển thị danh sách nhân viên
     public IActionResult Index()
     {
         return View();
     }
 
-    // Lấy danh sách nhân viên qua AJAX
     [HttpGet]
     public async Task<IActionResult> GetNhanVienList()
     {
@@ -46,7 +44,6 @@ public class NhanVienController : Controller
         return Json(nhanViens);
     }
 
-    // Thêm nhân viên qua AJAX
     [HttpPost]
     public async Task<IActionResult> AddNhanVien([FromBody] TblNhanVien nhanVien)
     {
@@ -65,7 +62,6 @@ public class NhanVienController : Controller
         return Json(new { success = true, message = "Thêm nhân viên thành công!" });
     }
 
-    // Sửa nhân viên qua AJAX
     [HttpPost]
     public async Task<IActionResult> EditNhanVien([FromBody] TblNhanVien nhanVien)
     {
@@ -95,7 +91,6 @@ public class NhanVienController : Controller
         return Json(new { success = true, message = "Sửa nhân viên thành công!" });
     }
 
-    // Xóa nhân viên qua AJAX
     [HttpPost]
     public async Task<IActionResult> DeleteNhanVien(string maNV)
     {
@@ -112,7 +107,6 @@ public class NhanVienController : Controller
         return Json(new { success = true, message = "Xóa nhân viên thành công!" });
     }
 
-    // Lấy danh sách tài khoản và chức vụ để điền vào form
     [HttpGet]
     public async Task<IActionResult> GetDropdownData()
     {

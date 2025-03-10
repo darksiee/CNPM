@@ -21,12 +21,11 @@ public class BaoCaoController : Controller
         return View();
     }
 
-    // 1. Thống kê doanh thu theo ngày, tuần, tháng, năm
     [HttpGet]
     public async Task<IActionResult> GetDoanhThu(string loaiThongKe, DateTime? tuNgay, DateTime? denNgay)
     {
-        tuNgay = tuNgay.HasValue ? tuNgay.Value : DateTime.Now.AddDays(-30); // Default to 30 days ago
-        denNgay = denNgay.HasValue ? denNgay.Value : DateTime.Now;           // Default to today
+        tuNgay = tuNgay.HasValue ? tuNgay.Value : DateTime.Now.AddDays(-30); 
+        denNgay = denNgay.HasValue ? denNgay.Value : DateTime.Now;           
 
         var query = _context.TblPhieuThus
             .Where(pt => pt.DTgLap >= tuNgay && pt.DTgLap <= denNgay)
@@ -75,7 +74,6 @@ public class BaoCaoController : Controller
 
         return Json(result);
     }
-    // 2. Thống kê xuất kho theo thời gian
     [HttpGet]
     public async Task<IActionResult> GetXuatKho(DateTime? tuNgay, DateTime? denNgay)
     {
@@ -126,7 +124,6 @@ public class BaoCaoController : Controller
         return Json(tonKho);
     }
 
-    // 4. Thống kê khách hàng mua nhiều nhất
     [HttpGet]
     public async Task<IActionResult> GetKhachHangMuaNhieu()
     {
@@ -159,8 +156,7 @@ public class BaoCaoController : Controller
                                     SoLuong = ct.ISl,
                                     DonGia = ct.PkFkSMaSpNavigation.FDonGiaBan,
                                     ThanhTien = ct.ISl * ct.PkFkSMaSpNavigation.FDonGiaBan,
-                                    // Xác định kê đơn dựa trên FkSMaLoai
-                                    KeDon = ct.PkFkSMaSpNavigation.FkSMaLoai == "LSP002" // LSP002 là kê đơn, LSP001 là không kê đơn
+                                    KeDon = ct.PkFkSMaSpNavigation.FkSMaLoai == "LSP002" 
                                 }).ToList()
                         }).ToList()
                 })
@@ -169,14 +165,12 @@ public class BaoCaoController : Controller
 
         return Json(khachHang);
     }
-    // 5. Thống kê hiệu suất nhân viên
     [HttpGet]
     public async Task<IActionResult> GetHieuSuatNhanVien(DateTime? tuNgay, DateTime? denNgay)
     {
         tuNgay = tuNgay.HasValue ? tuNgay.Value : DateTime.Now.AddDays(-30);
         denNgay = denNgay.HasValue ? denNgay.Value : DateTime.Now;
 
-        // Fetch all necessary data into memory first
         var nhanViens = await _context.TblNhanViens.ToListAsync();
         var phieuThus = await _context.TblPhieuThus
             .Where(pt => pt.DTgLap >= tuNgay && pt.DTgLap <= denNgay)
@@ -187,7 +181,6 @@ public class BaoCaoController : Controller
         var ctPhieuThus = await _context.TblCtphieuThus.ToListAsync();
         var sanPhams = await _context.TblSanPhams.ToListAsync();
 
-        // Perform the GroupJoin and calculations client-side
         var nhanVien = nhanViens
             .GroupJoin(phieuThus,
                 nv => nv.PkSMaNv,

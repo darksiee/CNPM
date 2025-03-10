@@ -7,12 +7,17 @@
 
     <div id="message" class="alert" style="display:none;"></div>
 
-    <!-- Nút thêm nhân viên -->
     <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#nhanVienModal" onclick="clearForm()">
         Thêm nhân viên
     </button>
 
-    <!-- Bảng danh sách nhân viên -->
+    <div class="input-group mb-3" style="max-width: 300px;">
+        <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên nhân viên">
+        <div class="input-group-append">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+        </div>
+    </div>
+
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <table class="table table-bordered table-hover mb-0" id="nhanVienTable">
@@ -35,7 +40,6 @@
         </div>
     </div>
 
-    <!-- Modal thêm/sửa nhân viên -->
     <div class="modal fade" id="nhanVienModal" tabindex="-1" role="dialog" aria-labelledby="nhanVienModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -98,40 +102,64 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     $(document).ready(function () {
+        let allNhanViens = []; 
+
         loadNhanVienList();
         loadDropdownData();
 
-        // Load danh sách nhân viên
         function loadNhanVienList() {
             $.ajax({
                 url: '@Url.Action("GetNhanVienList", "NhanVien")',
                 type: 'GET',
                 success: function (data) {
-                    var tbody = $('#nhanVienList').empty();
-                    data.forEach(function (nv) {
-                        tbody.append(`
-                            <tr>
-                                <td>${nv.pkSMaNv}</td>
-                                <td>${nv.sHoTen}</td>
-                                <td>${new Date(nv.dNgaySinh).toLocaleDateString()}</td>
-                                <td>${nv.sCCcd}</td>
-                                <td>${nv.sSdt}</td>
-                                <td>${new Date(nv.dNgayVaoLam).toLocaleDateString()}</td>
-                                <td>${nv.taiKhoan}</td>
-                                <td>${nv.chucVu}</td>
-                                <td>${nv.bTrangThai ? 'Hoạt động' : 'Không hoạt động'}</td>
-                                <td>
-                                    <button class="btn btn-warning btn-sm mr-1" onclick="editNhanVien('${nv.pkSMaNv}')">Sửa</button>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteNhanVien('${nv.pkSMaNv}')">Xóa</button>
-                                </td>
-                            </tr>
-                        `);
-                    });
+                    allNhanViens = data; 
+                    renderNhanVienList(data); 
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error loading employees: " + error);
                 }
             });
         }
 
-        // Load dữ liệu cho dropdown
+        function renderNhanVienList(data) {
+            var tbody = $('#nhanVienList').empty();
+            if (data && data.length > 0) {
+                data.forEach(function (nv) {
+                    tbody.append(`
+                        <tr>
+                            <td>${nv.pkSMaNv}</td>
+                            <td>${nv.sHoTen}</td>
+                            <td>${new Date(nv.dNgaySinh).toLocaleDateString()}</td>
+                            <td>${nv.sCCcd}</td>
+                            <td>${nv.sSdt}</td>
+                            <td>${new Date(nv.dNgayVaoLam).toLocaleDateString()}</td>
+                            <td>${nv.taiKhoan}</td>
+                            <td>${nv.chucVu}</td>
+                            <td>${nv.bTrangThai ? 'Hoạt động' : 'Không hoạt động'}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm mr-1" onclick="editNhanVien('${nv.pkSMaNv}')">Sửa</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteNhanVien('${nv.pkSMaNv}')">Xóa</button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            } else {
+                tbody.append('<tr><td colspan="10" class="text-center">Không tìm thấy nhân viên</td></tr>');
+            }
+        }
+
+        $('#searchInput').on('input', function () {
+            var searchTerm = $(this).val().toLowerCase().trim();
+            if (searchTerm === '') {
+                renderNhanVienList(allNhanViens); // Hiển thị tất cả khi không có từ khóa
+            } else {
+                var filteredNhanViens = allNhanViens.filter(function (nv) {
+                    return nv.sHoTen.toLowerCase().includes(searchTerm);
+                });
+                renderNhanVienList(filteredNhanViens);
+            }
+        });
+
         function loadDropdownData() {
             $.ajax({
                 url: '@Url.Action("GetDropdownData", "NhanVien")',
@@ -150,14 +178,12 @@
             });
         }
 
-        // Xóa form khi thêm mới
         window.clearForm = function () {
             $('#nhanVienForm')[0].reset();
             $('#maNV').prop('disabled', false);
             $('#nhanVienModalLabel').text('Thêm nhân viên');
         };
 
-        // Lưu nhân viên (thêm hoặc sửa)
         $('#saveNhanVien').click(function () {
             var nhanVien = {
                 PkSMaNv: $('#maNV').val(),
@@ -182,12 +208,12 @@
                     if (response.success) {
                         $('#nhanVienModal').modal('hide');
                         loadNhanVienList();
+                        $('#searchInput').val(''); // Reset thanh tìm kiếm
                     }
                 }
             });
         });
 
-        // Sửa nhân viên
         window.editNhanVien = function (maNV) {
             $.ajax({
                 url: '@Url.Action("GetNhanVienList", "NhanVien")',
@@ -209,7 +235,6 @@
             });
         };
 
-        // Xóa nhân viên
         window.deleteNhanVien = function (maNV) {
             if (confirm('Bạn có chắc muốn xóa nhân viên này không?')) {
                 $.ajax({
@@ -220,13 +245,13 @@
                         showMessage(response.success ? 'alert-success' : 'alert-danger', response.message);
                         if (response.success) {
                             loadNhanVienList();
+                            $('#searchInput').val(''); // Reset thanh tìm kiếm
                         }
                     }
                 });
             }
         };
 
-        // Hiển thị thông báo
         function showMessage(className, message) {
             $('#message').removeClass('alert-success alert-danger')
                 .addClass(className).text(message).show();

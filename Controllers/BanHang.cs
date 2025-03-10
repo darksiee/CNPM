@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-[Authorize] // Yêu cầu đăng nhập
+[Authorize] 
 public class BanHangController : Controller
 {
     private readonly PharmacyDbContext _context;

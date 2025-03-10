@@ -1,19 +1,18 @@
-﻿/* Tinh chỉnh kiểu dáng cho footer */
-footer {
-    background: linear-gradient(135deg, #007bff, #0056b3); /* Gradient nền */
-    width: 100vw; /* Chiều rộng toàn màn hình dựa trên viewport */
-    position: relative; /* Đảm bảo footer độc lập với các phần tử cha */
-    left: 50%; /* Dịch chuyển sang phải 50% */
-    transform: translateX(-50%); /* Kéo lại về giữa để căn chính xác */
-    margin: 0; /* Loại bỏ margin mặc định */
-    padding-left: 0; /* Loại bỏ padding mặc định */
-    padding-right: 0; /* Loại bỏ padding mặc định */
+﻿footer {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    width: 100vw; 
+    position: relative; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    margin: 0; 
+    padding-left: 0; 
+    padding-right: 0; 
 }
 
 .footer-content {
-    max-width: 1200px; /* Giới hạn nội dung chính giữa */
-    margin-left: auto; /* Căn giữa */
-    margin-right: auto; /* Căn giữa */
+    max-width: 1200px; 
+    margin-left: auto; 
+    margin-right: auto; 
 }
 
 footer h4 {
@@ -27,7 +26,7 @@ footer p, footer li {
 }
 
 .hover-link:hover {
-    color: #ffd700 !important; /* Màu vàng khi hover */
+    color: #ffd700 !important;
     transition: color 0.3s ease;
 }
 
@@ -36,9 +35,9 @@ footer .small {
     opacity: 0.8;
 }
 
-/* Đảm bảo body không ảnh hưởng */
+
 body {
     margin: 0;
     padding: 0;
-    overflow-x: hidden; /* Ngăn tràn ngang */
+    overflow-x: hidden; 
 }

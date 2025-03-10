@@ -8,7 +8,7 @@
 <div class="container py-4">
     <!-- Tiêu đề + Đăng nhập -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-primary mb-0" style="font-family: 'Arial', sans-serif;">
+        <h2 class="fw-bold text-primary mb-0 title-custom">
             Nhà thuốc Thái Bình
         </h2>
         <div class="d-flex align-items-center gap-3">
@@ -66,7 +66,7 @@
 
     <!-- Tiêu đề danh sách -->
     <h3 class="fw-bold text-center text-primary mb-5" style="font-size: 2rem; letter-spacing: 1px;">
-        Danh sách Thuốc
+        Danh sách sản phẩm
     </h3>
 
     <!-- Danh sách sản phẩm -->
@@ -80,7 +80,7 @@
                 <a asp-action="Details" asp-route-id="@item.PkSMaSp" class="text-decoration-none">
                     <div class="card h-100 shadow-sm border-0 transition-card hover-lift">
                         <img src="@imagePath" class="card-img-top" alt="@item.STenSp"
-                             style="height: 220px; object-fit: cover; transition: transform 0.3s;"
+                             style="height: 220px; object-fit: contain; object-position: center; transition: transform 0.3s;"
                              onerror="this.src='@defaultImagePath';">
                         <div class="card-body p-4">
                             <h5 class="card-title fw-semibold text-dark mb-3" style="font-size: 1.25rem;">

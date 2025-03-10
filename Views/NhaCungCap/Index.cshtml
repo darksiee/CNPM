@@ -1,0 +1,177 @@
+﻿@{
+    ViewData["Title"] = "Quản lý nhà cung cấp";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">Quản lý nhà cung cấp</h2>
+
+    <div id="message" class="alert" style="display:none;"></div>
+
+    <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#nhaCungCapModal" onclick="clearForm()">
+        Thêm nhà cung cấp
+    </button>
+
+    <!-- Bảng danh sách nhà cung cấp -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-bordered table-hover mb-0" id="nhaCungCapTable">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th>Mã NCC</th>
+                        <th>Tên NCC</th>
+                        <th>Địa chỉ</th>
+                        <th>SĐT</th>
+                        <th>Số tài khoản</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="nhaCungCapList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="nhaCungCapModal" tabindex="-1" role="dialog" aria-labelledby="nhaCungCapModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="nhaCungCapModalLabel">Thêm/Sửa nhà cung cấp</h5>
+                </div>
+                <div class="modal-body">
+                    <form id="nhaCungCapForm">
+                        <div class="form-group">
+                            <label class="font-weight-bold">Mã nhà cung cấp</label>
+                            <input type="text" id="maNCC" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Tên nhà cung cấp</label>
+                            <input type="text" id="tenNCC" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Địa chỉ</label>
+                            <input type="text" id="diaChi" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">SĐT</label>
+                            <input type="text" id="sdt" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label class="font-weight-bold">Số tài khoản</label>
+                            <input type="text" id="soTK" class="form-control" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="saveNhaCungCap">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+        loadNhaCungCapList();
+
+        function loadNhaCungCapList() {
+            $.ajax({
+                url: '@Url.Action("GetNhaCungCapList", "NhaCungCap")',
+                type: 'GET',
+                success: function (data) {
+                    var tbody = $('#nhaCungCapList').empty();
+                    data.forEach(function (ncc) {
+                        tbody.append(`
+                            <tr>
+                                <td>${ncc.pkSMaNcc}</td>
+                                <td>${ncc.sTenNcc}</td>
+                                <td>${ncc.sDiaChi || ''}</td>
+                                <td>${ncc.sSdt || ''}</td>
+                                <td>${ncc.sSoTk || ''}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm mr-1" onclick="editNhaCungCap('${ncc.pkSMaNcc}')">Sửa</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteNhaCungCap('${ncc.pkSMaNcc}')">Xóa</button>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                }
+            });
+        }
+
+        window.clearForm = function () {
+            $('#nhaCungCapForm')[0].reset();
+            $('#maNCC').prop('disabled', false);
+            $('#nhaCungCapModalLabel').text('Thêm nhà cung cấp');
+        };
+
+        $('#saveNhaCungCap').click(function () {
+            var nhaCungCap = {
+                PkSMaNcc: $('#maNCC').val(),
+                STenNcc: $('#tenNCC').val(),
+                SDiaChi: $('#diaChi').val(),
+                SSdt: $('#sdt').val(),
+                SSoTk: $('#soTK').val()
+            };
+
+            var url = $('#maNCC').prop('disabled') ? '@Url.Action("EditNhaCungCap", "NhaCungCap")' : '@Url.Action("AddNhaCungCap", "NhaCungCap")';
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(nhaCungCap),
+                success: function (response) {
+                    showMessage(response.success ? 'alert-success' : 'alert-danger', response.message);
+                    if (response.success) {
+                        $('#nhaCungCapModal').modal('hide');
+                        loadNhaCungCapList();
+                    }
+                }
+            });
+        });
+
+        window.editNhaCungCap = function (maNCC) {
+            $.ajax({
+                url: '@Url.Action("GetNhaCungCapList", "NhaCungCap")',
+                type: 'GET',
+                success: function (data) {
+                    var ncc = data.find(x => x.pkSMaNcc === maNCC);
+                    $('#maNCC').val(ncc.pkSMaNcc).prop('disabled', true);
+                    $('#tenNCC').val(ncc.sTenNcc);
+                    $('#diaChi').val(ncc.sDiaChi);
+                    $('#sdt').val(ncc.sSdt);
+                    $('#soTK').val(ncc.sSoTk);
+                    $('#nhaCungCapModalLabel').text('Sửa nhà cung cấp');
+                    $('#nhaCungCapModal').modal('show');
+                }
+            });
+        };
+
+        window.deleteNhaCungCap = function (maNCC) {
+            if (confirm('Bạn có chắc muốn xóa nhà cung cấp này không?')) {
+                $.ajax({
+                    url: '@Url.Action("DeleteNhaCungCap", "NhaCungCap")',
+                    type: 'POST',
+                    data: { maNCC: maNCC },
+                    success: function (response) {
+                        showMessage(response.success ? 'alert-success' : 'alert-danger', response.message);
+                        if (response.success) {
+                            loadNhaCungCapList();
+                        }
+                    }
+                });
+            }
+        };
+
+        function showMessage(className, message) {
+            $('#message').removeClass('alert-success alert-danger')
+                .addClass(className).text(message).show();
+            setTimeout(() => $('#message').hide(), 3000);
+        }
+          $(document).on('click', '.close, .btn-secondary', function () {
+            console.log("Nút đóng được click");
+            $('#nhaCungCapModal').modal('hide');
+        });
+    });
+</script>

@@ -41,8 +41,8 @@ namespace CNPM.Controllers
             {
                 new Claim(ClaimTypes.Name, taiKhoan.STenTk),
                 new Claim("MaTK", taiKhoan.PkSMaTk),
-                new Claim(ClaimTypes.Role, taiKhoan.FkSMaQuyen ?? "Unknown"), // Role là mã quyền (Q002)
-                new Claim("FkSMaQuyen", taiKhoan.FkSMaQuyen ?? "Unknown") // Claim riêng cho mã quyền nếu cần
+                new Claim(ClaimTypes.Role, taiKhoan.FkSMaQuyen ?? "Unknown"), 
+                new Claim("FkSMaQuyen", taiKhoan.FkSMaQuyen ?? "Unknown") 
             };
 
             var identity = new ClaimsIdentity(claims, "CookieAuth");
@@ -80,7 +80,7 @@ namespace CNPM.Controllers
                 return View();
             }
 
-            // Tự sinh mã tài khoản (TK001, TK002, ...)
+     
             string maTK;
             int count = 1;
             do
@@ -94,7 +94,7 @@ namespace CNPM.Controllers
                 PkSMaTk = maTK,
                 STenTk = tenTK,
                 SMk = matKhau,
-                FkSMaQuyen = null // Gán quyền mặc định Q002 cho tài khoản mới
+                FkSMaQuyen = null 
             };
 
             _context.TblTaiKhoans.Add(taiKhoan);
