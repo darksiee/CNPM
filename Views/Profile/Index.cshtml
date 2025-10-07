@@ -1,0 +1,81 @@
+@model CNPM.Models.TblTaiKhoan
+
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    var nhanVien = Model.TblNhanViens.FirstOrDefault();
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Thông tin cá nhân</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Tên tài khoản:</dt>
+                        <dd class="col-sm-8">@Model.STenTk</dd>
+
+                        <dt class="col-sm-4">Mã tài khoản:</dt>
+                        <dd class="col-sm-8">@Model.PkSMaTk</dd>
+
+                        <dt class="col-sm-4">Quyền:</dt>
+                        <dd class="col-sm-8">@(Model.FkSMaQuyenNavigation?.STenQuyen ?? "Chưa phân quyền")</dd>
+
+                        @if (nhanVien != null)
+                        {
+                            <dt class="col-sm-4">Mã nhân viên:</dt>
+                            <dd class="col-sm-8">@nhanVien.PkSMaNv</dd>
+
+                            <dt class="col-sm-4">Họ tên:</dt>
+                            <dd class="col-sm-8">@nhanVien.SHoTen</dd>
+
+                            <dt class="col-sm-4">Ngày sinh:</dt>
+                            <dd class="col-sm-8">@(nhanVien.DNgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+
+                            <dt class="col-sm-4">CCCD:</dt>
+                            <dd class="col-sm-8">@(nhanVien.SCccd ?? "Chưa cập nhật")</dd>
+
+                            <dt class="col-sm-4">Số điện thoại:</dt>
+                            <dd class="col-sm-8">@(nhanVien.SSdt ?? "Chưa cập nhật")</dd>
+
+                            <dt class="col-sm-4">Ngày vào làm:</dt>
+                            <dd class="col-sm-8">@(nhanVien.DNgayVaoLam?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+
+                            <dt class="col-sm-4">Chức vụ:</dt>
+                            <dd class="col-sm-8">@(nhanVien.FkSMaCvNavigation?.STenCv ?? "Chưa cập nhật")</dd>
+
+                            <dt class="col-sm-4">Trạng thái:</dt>
+                            <dd class="col-sm-8">
+                                @if (nhanVien.BTrangThai == true)
+                                {
+                                    <span class="badge bg-success">Đang làm việc</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Nghỉ việc</span>
+                                }
+                            </dd>
+                        }
+                        else
+                        {
+                            <dt class="col-sm-12 text-center text-muted">
+                                <em>Chưa có thông tin nhân viên</em>
+                            </dt>
+                        }
+                    </dl>
+
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Đổi mật khẩu
+                        </a>
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
+                            Quay lại trang chủ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
