@@ -243,8 +243,23 @@ Use **QUICK_REFERENCE.md** checklist while presenting.
 
 3. **Build and run**:
    ```bash
+   # Step 1: Restore dependencies
    dotnet restore
+   
+   # Step 2: Setup database (choose one method)
+   # Method A: Using SQL script
+   # Run CODE DATABASE.sql on your SQL Server instance
+   
+   # Method B: Using Entity Framework migrations (if available)
+   # dotnet ef database update
+   
+   # Step 3: Update connection string in appsettings.json
+   # Edit the DefaultConnection to point to your database
+   
+   # Step 4: Build the application
    dotnet build
+   
+   # Step 5: Run the application
    dotnet run
    ```
 

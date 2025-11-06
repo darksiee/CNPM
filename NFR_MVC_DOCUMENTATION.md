@@ -1110,16 +1110,26 @@ public class SanPhamController : Controller
    // Implement password hashing với work factor
    using BCrypt.Net;
    
+   // Đọc work factor từ configuration (khuyến nghị)
+   // appsettings.json: "Security": { "BCryptWorkFactor": 12 }
+   int workFactor = _configuration.GetValue<int>("Security:BCryptWorkFactor", 12);
+   
+   // HOẶC hardcode cho đơn giản:
+   int workFactor = 12; // 10-12 cho ứng dụng hiện đại, có thể điều chỉnh theo hardware
+   
    // Khi tạo mật khẩu mới (Register)
-   int workFactor = 12; // 10-12 cho ứng dụng hiện đại
    var hashedPassword = BCrypt.HashPassword(password, workFactor);
    
    // Khi verify mật khẩu (Login)
    bool isValid = BCrypt.Verify(password, taiKhoan.SMk);
    
-   // Add [Authorize] attributes
+   // Add [Authorize] attributes để bảo vệ controllers
    [Authorize]
    public class SanPhamController : Controller { }
+   
+   // Hoặc bảo vệ specific actions
+   [Authorize(Roles = "Admin")]
+   public async Task<IActionResult> Delete(string id) { ... }
    ```
 
 2. **Performance Optimizations:**
