@@ -187,12 +187,15 @@ builder.Services.AddAuthentication("CookieAuth")
 **1. Authentication trong Controller**
 ```csharp
 // File: Controllers/AccountController.cs
+// ⚠️ SECURITY NOTE: Code hiện tại sử dụng plain text password (CẦN CẢI TIẾN)
+// Code dưới đây là implementation hiện tại, cần hash password như đề xuất ở phần Recommendations
 [HttpPost]
 public async Task<IActionResult> Login(string username, string password)
 {
     var taiKhoan = await _context.TblTaiKhoans
         .Include(tk => tk.FkSMaQuyenNavigation)
         .FirstOrDefaultAsync(tk => tk.STenTk == username && tk.SMk == password);
+    // ⚠️ Plain text password comparison - NÊN DÙNG password hashing (xem phần Recommendations)
 
     if (taiKhoan == null)
     {
@@ -258,10 +261,12 @@ public partial class TblTaiKhoan
 }
 ```
 
-**Cải tiến có thể làm (đề xuất):**
-- 🔒 Mã hóa mật khẩu bằng BCrypt/PBKDF2
+**Cải tiến có thể làm (đề xuất - QUAN TRỌNG):**
+- 🔒 **MÃ HÓA MẬT KHẨU** bằng BCrypt/PBKDF2 (workFactor 10-12) - XEM PHẦN RECOMMENDATIONS
 - 🔒 HTTPS để mã hóa dữ liệu truyền tải
 - 🔒 Thêm [Authorize] attribute cho các controller cần bảo vệ
+
+**⚠️ LƯU Ý**: Code hiện tại sử dụng plain text password (tk.SMk == password), đây là security vulnerability cần được fix như đề xuất ở phần Recommendations.
 
 ---
 
@@ -286,7 +291,7 @@ public partial class TblSanPham
     public bool IsExpired()
     {
         return DHanSuDung.HasValue && 
-               DHanSuDung.Value < DateOnly.FromDateTime(DateTime.Now);
+               DHanSuDung.Value < DateOnly.FromDateTime(DateTime.UtcNow);
     }
 }
 ```
@@ -1102,9 +1107,15 @@ public class SanPhamController : Controller
 
 1. **Security Enhancements:**
    ```csharp
-   // Implement password hashing
+   // Implement password hashing với work factor
    using BCrypt.Net;
-   var hashedPassword = BCrypt.HashPassword(password);
+   
+   // Khi tạo mật khẩu mới (Register)
+   int workFactor = 12; // 10-12 cho ứng dụng hiện đại
+   var hashedPassword = BCrypt.HashPassword(password, workFactor);
+   
+   // Khi verify mật khẩu (Login)
+   bool isValid = BCrypt.Verify(password, taiKhoan.SMk);
    
    // Add [Authorize] attributes
    [Authorize]

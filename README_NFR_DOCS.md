@@ -265,9 +265,9 @@ When updating this documentation:
 
 ## 📚 Additional Resources
 
-- [ASP.NET Core MVC Documentation](https://docs.microsoft.com/aspnet/core/mvc/)
-- [Entity Framework Core Documentation](https://docs.microsoft.com/ef/core/)
-- [C# Coding Conventions](https://docs.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+- [ASP.NET Core MVC Documentation](https://learn.microsoft.com/aspnet/core/mvc/)
+- [Entity Framework Core Documentation](https://learn.microsoft.com/ef/core/)
+- [C# Coding Conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
 
 ---
 
